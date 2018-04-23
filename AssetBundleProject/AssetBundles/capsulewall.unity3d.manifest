@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 3358334202
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 2b43998b4cebc5741b5a4861d2761556
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: a3cfc39e857fcb6d83d180b9b4900fe8
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 136
+  Script: {instanceID: 0}
+Assets:
+- Assets/Prefabs/CapsuleWall.prefab
+Dependencies:
+- AssetBundles/share.unity3d

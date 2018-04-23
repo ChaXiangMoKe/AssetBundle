@@ -1,0 +1,21 @@
+ManifestFileVersion: 0
+CRC: 2791158053
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: e816ff4a5e74215f598364546a676ef4
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 6e91bf4d7bfc7c90eaa9aea5318d52d8
+HashAppended: 0
+ClassTypes:
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+Assets:
+- Assets/Materials/Wood texture floor_01.png
+- Assets/Materials/Wood texture floor_01.mat
+Dependencies: []
