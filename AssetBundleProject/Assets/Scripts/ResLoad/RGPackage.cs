@@ -22,11 +22,11 @@ public class RGPackage  {
     {
         get
         {
-            if (string.IsNullOrEmpty(_packageName))
+            if (string.IsNullOrEmpty(_packagePath))
             {
-                _packageName = PackageManager.GetPackagePath(_packageName);
+                _packagePath = PackageManager.GetPackagePath(_packageName);
             }
-            return _packageName;
+            return _packagePath;
         }
     }
 
@@ -237,7 +237,7 @@ public class RGPackage  {
         // 先检查包是否存在
         if (!File.Exists(PackagePath))
         {
-            RGLog.Error("<color=red>LoadBundleAsync</color> PackagePath not exits!!! -> <color = yellow>{0}</color>", PackagePath);
+            RGLog.Error("<color=red>LoadBundleAsync</color> PackagePath not exits!!! -> <color=yellow>{0}</color>", PackagePath);
 
             if(loadComplete != null)
             {
@@ -257,7 +257,7 @@ public class RGPackage  {
         {
             AddCallback(assetName, loadComplete, evData);
 
-            CoroutineManager.Instace.StartCoroutine(IELoadAssetAsync(assetName, loadComplete, evData));
+            CoroutineManager.Instance.StartCoroutine(IELoadBundleAsync(assetName, loadComplete, evData));
         }
     }
 
@@ -274,7 +274,7 @@ public class RGPackage  {
 
         AddCallback(assetName, loadComplete, evData);
 
-        CoroutineManager.Instace.StartCoroutine(IELoadAssetAsync(assetName, loadComplete, evData));
+        CoroutineManager.Instance.StartCoroutine(IELoadAssetAsync(assetName, loadComplete, evData));
     }
 
     private IEnumerator IELoadBundleAsync(string assetName,Action<UnityEngine.Object,LoadEventData> loadComplete,LoadEventData evData)
@@ -307,7 +307,7 @@ public class RGPackage  {
             isLoadCache = _cacheAssetNameList.Count > 0;
         }
 
-        if(IsUI || IsForverBundle)
+        if (IsUI || IsForverBundle)
         {
             RGLog.DebugResLoad("<color=red>LoadUI</color> {0}", _packageName);
             if(loadComplete != null)
@@ -317,18 +317,19 @@ public class RGPackage  {
         }
         else
         {
-            CoroutineManager.Instace.StartCoroutine(IELoadAssetAsync(assetName, loadComplete, evData));
+            CoroutineManager.Instance.StartCoroutine(IELoadAssetAsync(assetName, loadComplete, evData));
             yield return 0;
         }
 
         // 加载缓存
-        CoroutineManager.Instace.StartCoroutine(LoadCache());
+        CoroutineManager.Instance.StartCoroutine(LoadCache());
 
         yield return null;
     }
 
     private IEnumerator IELoadAssetAsync(string assetName,Action<UnityEngine.Object,LoadEventData> loadComplete,LoadEventData evData)
     {
+        Debug.Log("name " + assetName);
         var ab = _bundle.LoadAssetAsync<UnityEngine.Object>(assetName);
         yield return ab;
 
@@ -373,7 +374,7 @@ public class RGPackage  {
         }
         else
         {
-            CoroutineManager.Instace.StartCoroutine(IELoadSceneAsync(loadComplete, evData));
+            CoroutineManager.Instance.StartCoroutine(IELoadSceneAsync(loadComplete, evData));
         }
     }
 

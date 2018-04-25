@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 2238626127
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: prefabs.ab
+      Dependencies: {}
+    Info_1:
+      Name: effect.ab
+      Dependencies: {}

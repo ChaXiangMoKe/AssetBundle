@@ -153,6 +153,7 @@ public class RGLog
             return;
 
         UnityEngine.Debug.LogErrorFormat("<color=red>[ERROR]</color>" + format.ToString(), args);
+
     }
 
     public static void Exception(System.Exception e)
@@ -189,7 +190,7 @@ public class RGLog
             return;
 
         #if UNITY_EDITOR
-                UnityEngine.Debug.LogFormat(string.Intern("<color=red>[ResLoad]</color>-") + format, args);
+                UnityEngine.Debug.LogFormat(string.Intern("<color=red>[ResLoad]</color>") + format, args);
         #endif
     }
 }

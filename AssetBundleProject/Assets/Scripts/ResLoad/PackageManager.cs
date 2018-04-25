@@ -47,6 +47,16 @@ public class PackageManager  {
         }
     }
 
+    // 卸载包
+    public static void UnloadPackage(string packageName)
+    {
+        var package = GetPackage(packageName);
+        if(package != null)
+        {
+            package.UnloadAll();
+        }
+    }
+    // 卸载全部包
     public static void UnloadAll()
     {
         using(var i = _packageCacheDic.GetEnumerator())
@@ -120,17 +130,16 @@ public class PackageManager  {
 
         // 包路径
         string packageUrl = "";
-
         if (model.Length > 0)
         {
-            if (model[0].Equals("Effect"))
+            if (model[0].Equals("effect"))
             {
                 //effect
-                packageUrl = "Effect/" + model[1];
-            }else if (model[0].Equals("Prefabs"))
+                packageUrl = "effect";
+            }else if (model[0].Equals("prefabs"))
             {
                 // prefabs
-                packageUrl = "Prefabs/" + model[1];
+                packageUrl = "prefabs" ;
             }
 
             RGLog.DebugResLoad("<color=yellow>Package Name = " + packageUrl + "</color>");

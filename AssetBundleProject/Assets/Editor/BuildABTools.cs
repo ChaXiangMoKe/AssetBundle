@@ -161,7 +161,6 @@ public class BuildABTools:EditorWindow {
         }
 
         //copy
-
         for(int i = 0; i < vFiles.Length; i++)
         {
             var vfData = vFiles[i];
@@ -574,9 +573,12 @@ public class BuildABTools:EditorWindow {
         var list = new List<VersionFile>();
         using (var reader = new StringReader(data))
         {
-            var msg = reader.ReadLine();
-            if (!string.IsNullOrEmpty(msg))
-                list.Add(new VersionFile(msg));
+            while (reader.Peek() != -1)
+            {
+                var msg = reader.ReadLine();
+                if (!string.IsNullOrEmpty(msg))
+                    list.Add(new VersionFile(msg));
+            }
         }
         return list.ToArray();
     }

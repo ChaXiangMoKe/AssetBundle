@@ -4,12 +4,12 @@ using System.Collections;
 
 public class CoroutineManager : MonoBehaviour {
 
-    public static CoroutineManager Instace { get; private set; }
+    public static CoroutineManager Instance { get; private set; }
 
     public delegate bool Condition();
 	// Use this for initialization
 	void Awake () {
-        Instace = this;
+        Instance = this;
 	}
 
     void OnDestroy()
@@ -44,5 +44,6 @@ public class CoroutineManager : MonoBehaviour {
 
     private void Update()
     {
+        PackageManager.UpdateFrame();
     }
 }

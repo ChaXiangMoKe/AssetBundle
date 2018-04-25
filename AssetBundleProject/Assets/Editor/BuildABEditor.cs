@@ -104,7 +104,6 @@ public class BuildABEditor
         AssetBundleBuild abb = new AssetBundleBuild();
         abb.assetBundleName = packageName;
         abb.assetNames = new string[guids.Length];
-
         for (int i = 0; i < guids.Length; i++)
         {
             string filePath = AssetDatabase.GUIDToAssetPath(guids[i]);
