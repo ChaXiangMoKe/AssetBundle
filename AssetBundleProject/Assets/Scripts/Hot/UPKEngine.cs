@@ -56,4 +56,18 @@ public class UPKEngine {
         }
     }
     #endregion
+
+    #region 解包
+    public static void UnpackStreaming(string infoFilePath,string upkFilePath,string outPath,IUPKUnpack progress)
+    {
+        UnpackUPK unpack = new UnpackUPK(infoFilePath,upkFilePath,outPath,progress);
+        unpack.UnpackSteaming();
+    }
+
+    public static void UnpackFirst(string infoFilePath,string upkFilePath,string outPath,IUPKUnpack progress)
+    {
+        UnpackUPK unpack = new UnpackUPK(infoFilePath, upkFilePath, outPath, progress);
+        unpack.UnpackFirst();
+    }
+    #endregion
 }

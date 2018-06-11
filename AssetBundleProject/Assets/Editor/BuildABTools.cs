@@ -95,6 +95,16 @@ public class BuildABTools:EditorWindow {
         //构建包
         BuildPackage();
     }
+
+    public static void BuildHotAll(List<HotObject> hotList)
+    {
+        CleanStreamingAssets();
+        BuildABEditor.ToolsBuildAB(configData.ConfigList, EditorUserBuildSettings.activeBuildTarget);
+        // 构建包
+        BuildPackage();
+        // 构建热更
+        BuildHotPackage(hotList);
+    }
     // 构建包
     public static void BuildPackage()
     {
@@ -176,9 +186,10 @@ public class BuildABTools:EditorWindow {
         var outFilesPath = Path.Combine(outPathFix, "file.txt").Replace("\\", "/");
         File.Copy(filesPath, outFilesPath);
 
-        //生成hotCofig
-        //         var hotConfigPath = Path.Combine(Util.DataPath, "hot_config.json");
-        //         HotCOn
+        // 生成hotCofig
+        var hotConfigPath = Path.Combine(Util.DataPath, "hot_config.json");
+        HotConfig hot = HotConfig.Create(hotConfigPath);
+        hot.SaveDevelop();
 
         Debug.Log("构建开发人员使用资源完成 ");
     }
@@ -554,9 +565,109 @@ public class BuildABTools:EditorWindow {
         RGLog.Debug(" first upk copy to bundle finished !");
     }
 
+    public static void BuildHotPackage(List<HotObject> hotList)
+    {
+        // 把hot 转成字典 用于后面查询
+        var hotDic = new Dictionary<string, bool>();
+        for (int i = 0; i < hotList.Count; i++)
+        {
+            hotDic.Add(hotList[i].package, true);
+        }
+
+        // 版本路径
+        string versionPath = GetVersionBundlePath();
+
+        // hot 路径
+        var hotPath = Replace(string.Format("{0}{1}{2}", versionPath, Path.DirectorySeparatorChar, "hot"));
+        // hot vesion
+        var hotVersionPath = Replace(string.Format("{0}{1}{2}", hotPath, Path.DirectorySeparatorChar, VersionInfo.BundleVersion));
+        // hot file
+        var hotFilePath = Replace(string.Format("{0}{1}{2}", hotPath, Path.DirectorySeparatorChar, "files.txt"));
+
+        // res 路径
+        var resPath = Replace(string.Format("{0}{1}{2}", versionPath, Path.DirectorySeparatorChar, "bundle"));
+        // res version
+        var resVersionPath = Replace(string.Format("{0}{1}{2}", versionPath, Path.DirectorySeparatorChar, VersionInfo.BundleVersion));
+        // res file
+        var resFilePath = Replace(string.Format("{0}{1}{2}", versionPath, Path.DirectorySeparatorChar, "files.txt"));
+
+        // 线上file.txt路径
+        var liveFilePath = "E:/work2/package/android/file.txt";
+
+        // 清理目录
+        ClearDirectory(hotPath);
+
+        // hot new files context dic
+        var hotNewFilesContextDic = new Dictionary<string, VersionFile>();
+        // hot files context list
+        var hotFilesPathContextList = new List<VersionFile>();
+
+        // res files.txt 内容
+        var resFiles = ReadFileInfo(File.ReadAllText(resFilePath));
+        for (int i = 0; i < resFilePath.Length; i++){
+            if (hotDic.ContainsKey(resFiles[i].Path))
+            {
+                hotNewFilesContextDic.Add(resFiles[i].Path, resFiles[i]);
+            }
+        }
+
+        // live files.txt 内容
+        var liveFiles = ReadFileInfo(File.ReadAllText(liveFilePath));
+        for(int i = 0; i < liveFilePath.Length; i++)
+        {
+            if (hotDic.ContainsKey(resFiles[i].Path))
+            {
+                hotFilesPathContextList.Add(hotNewFilesContextDic[resFiles[i].Path]);
+                RGLog.Debug("hot file -> " + resFiles[i]);
+            }
+            else
+            {
+                hotFilesPathContextList.Add(liveFiles[i]);
+            }
+        }
+
+        // hot files 文件写入
+        var hotFs = new FileStream(hotFilePath, FileMode.CreateNew);
+        var hotSw = new StreamWriter(hotFs);
+        for (int i = 0; i < hotFilesPathContextList.Count; i++)
+        {
+            VersionFile verfile = hotFilesPathContextList[i];
+            hotSw.WriteLine(verfile);
+        }
+        hotSw.Close();
+        hotFs.Close();
+
+        // copy 需要热更的文件到hot目录下
+        for(int i = 0; i < hotFilesPathContextList.Count; i++)
+        {
+            if (hotDic.ContainsKey(hotFilesPathContextList[i].Path))
+            {
+                var rf = Replace(string.Format("{0}{1}{2}", resVersionPath, Path.DirectorySeparatorChar, hotFilesPathContextList[i].Path));
+                var tf = Replace(string.Format("{0}{1}{2}", hotVersionPath, Path.DirectorySeparatorChar, hotFilesPathContextList[i].Path));
+
+                string dir = Path.GetDirectoryName(tf);
+                Directory.CreateDirectory(dir);
+
+                File.Copy(rf, tf);
+                RGLog.Debug("copy hot file -> " + hotFilesPathContextList[i].Path);
+            }
+        }
+
+        RGLog.Debug("热更资源构建完毕");
+    }
+
     public static string Replace(string path)
     {
         return path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+    }
+
+    public static void ClearDirectory(string dirPath)
+    {
+        if (Directory.Exists(dirPath))
+        {
+            Directory.Delete(dirPath, true);
+        }
+        Directory.CreateDirectory(dirPath);
     }
 
     // 返回版本资源路径

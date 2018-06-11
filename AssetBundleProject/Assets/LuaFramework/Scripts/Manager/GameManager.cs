@@ -5,12 +5,20 @@ using System.Collections.Generic;
 using LuaInterface;
 using System.Reflection;
 using System.IO;
+using FairyGUI;
+
+public class ConfigJson
+{
+    public string UpdateUrl;
+}
 
 namespace LuaFramework {
     public class GameManager : Manager {
         protected static bool initialize = false;
         private List<string> downloadFiles = new List<string>();
 
+        private HotUI hotUI = null;
+        private HotEngine hotEngine;
         /// <summary>
         /// 初始化游戏管理器
         /// </summary>
@@ -27,9 +35,137 @@ namespace LuaFramework {
             }
             DontDestroyOnLoad(gameObject);  //防止销毁自己
 
-            CheckExtractResource(); //释放资源
+            //CheckExtractResource(); //释放资源
+
+            // 热更UI
+            hotUI = new HotUI();
+
+            // 热更新引擎
+            hotEngine = new HotEngine(hotUI);
+            hotEngine.OpenHotUpdate = AppConst.UpdateMode;
+
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Application.targetFrameRate = AppConst.GameFrameRate;
+
+            Timers.inst.StartCoroutine(GetConfig()); 
+        }
+
+        // 从 cnd 上获取 配置信息
+        IEnumerator GetConfig(string tandbyAddress = "")
+        {
+            string configUrl = "";
+            if(VersionInfo.BType == VersionInfo.BUILD_TYPE.DEVELOP
+                ||VersionInfo.BType == VersionInfo.BUILD_TYPE.DEVELOP_SPECITFY_SERVER
+                || VersionInfo.BType == VersionInfo.BUILD_TYPE.DEVELOP_SELECT_SERVER)
+            {
+                configUrl = "http://192.168.1.253./platform/devConfig.json";
+            }
+            else if(VersionInfo.BType == VersionInfo.BUILD_TYPE.LIVE || VersionInfo.BType == VersionInfo.BUILD_TYPE.LIVE_LOG)
+            {
+                if (string.IsNullOrEmpty(tandbyAddress))
+                {
+                    configUrl = "http://www.baidu.com";
+                }
+                else
+                {
+                    configUrl = tandbyAddress;
+                }
+            }
+
+            Debug.Log("Config Url" + configUrl);
+
+            WWW www = new WWW(configUrl);
+            yield return www;
+
+            if(www.error != null)
+            {
+                RGLog.Warn("[GameManager] > GetConfig 02");
+                RGLog.Error(www.error);
+
+                // 错误提示弹窗
+                hotUI.ShowPopup("错误", "提示", () =>
+                 {
+                     Timers.inst.StartCoroutine(GetConfig("http://www.baidu.com/备用"));
+                 },
+                 ()=> 
+                 {
+                     Application.Quit();
+                 },"Retry","Quit");
+            }
+            else
+            {
+                if (www.isDone)
+                {
+                    ConfigJson config = JsonUtility.FromJson<ConfigJson>(www.text);
+
+                    AppConst.WebUrl = config.UpdateUrl;
+
+                    if(VersionInfo.BType == VersionInfo.BUILD_TYPE.LIVE_LOG)
+                    {
+                        //资源更新地址
+                        AppConst.WebUrl = "http://192.168.1.253/platform/";
+                        //备用资源更新地址
+                        AppConst.UpdateUrl2 = "http://192.168.1.253/platform";
+                    }
+
+                    //校验版本
+                    Timers.inst.StartCoroutine(CheckVersionInfo());
+                }
+            }
+        }
+
+        private IEnumerator CheckVersionInfo()
+        {
+            WWWForm wwwFrom = new WWWForm();
+            wwwFrom.AddField("version", AppConst.Version);
+            wwwFrom.AddField("packageId", "0");
+
+            WWW www = new WWW(AppConst.VersionCheckURL, wwwFrom);
+            yield return www;
+
+            if (www.error != null)
+            {
+                // 错误提示提窗
+                hotUI.ShowPopup("title", "message", () =>
+                {
+                    Timers.inst.StartCoroutine(CheckVersionInfo());
+                },
+
+                () =>
+                {
+                    Application.Quit();
+                }, "Retry", "Quit");
+            }
+            else
+            {
+                CheckVersionJason res = JsonUtility.FromJson<CheckVersionJason>(www.text);
+
+                if(res.needUpdate == "1")
+                {
+                    hotUI.ShowPopup("title", "message", () =>
+                    {
+                        Application.OpenURL(res.updateUrl);
+                    }, 
+                    () =>
+                    {
+                        Application.Quit();
+                    },"Yes","No");
+                }
+                else
+                {
+                    //释放资源
+                    hotEngine.Init();
+                }
+            }
+        }
+
+
+        void Update()
+        {
+            if (hotEngine != null)
+            {
+                hotEngine.Update();
+            }
         }
 
         /// <summary>
@@ -302,5 +438,7 @@ namespace LuaFramework {
             }
             Debug.Log("~GameManager was destroyed");
         }
+
+
     }
 }

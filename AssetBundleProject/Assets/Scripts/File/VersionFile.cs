@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using LuaFramework;
 
 public class VersionFile  {
 
@@ -19,6 +22,17 @@ public class VersionFile  {
 
     public long Size { get; set; }
 
+    public string WebPath
+    {
+        get { return (Version + "/" + Path).Replace("\\", "/"); }
+    }
+    public string DataLocalPath
+    {
+        get
+        {
+            return (Util.DataPath + Path).Replace("//", "/");
+        }
+    }
     public VersionFile()
     {
 
@@ -43,6 +57,21 @@ public class VersionFile  {
         }
     }
 
+    public static VersionFile[] ReadFileInfo(string data)
+    {
+        var list = new List<VersionFile>();
+        using(var reader = new StringReader(data))
+        {
+            while(reader.Peek() != -1){
+                var msg = reader.ReadLine();
+                if (!string.IsNullOrEmpty(msg))
+                {
+                    list.Add(new VersionFile(msg));
+                }
+            }
+        }
+        return list.ToArray();
+    }
     public override string ToString()
     {
         return string.Join("|", new[] { Path, Hash, Version, Size.ToString() });
